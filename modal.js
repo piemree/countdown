@@ -1,13 +1,13 @@
 (function () {
 
-    // Modal HTML'ini oluştur
-    const modalHTML = `
+  // Modal HTML'ini oluştur
+  const modalHTML = `
  <div
       class=""
       id="ikas-popup-container"
       style="
         position: fixed;
-        display: flex;
+        display: none;
         justify-content: center;
         align-items: center;
         inset: 0px;
@@ -121,7 +121,7 @@
                   padding: 10px 0px;
                 "
               >
-                Tüm Kredi Kartlarına  12 Taksit İmkanıyla!
+                Tüm Kredi Kartlarına 12 Taksit İmkanıyla!
               </div>
             </div>
             <div
@@ -143,11 +143,12 @@
                   padding: 10px 6px;
                 "
               >
-                Siparişlerinizde %80'e varan indirimlerden ömür boyu yararlanın ve
-                güncellemeler için kaydolun!
+                Siparişlerinizde %80'e varan indirimlerden ömür boyu yararlanın
+                ve güncellemeler için kaydolun!
               </div>
             </div>
-            <div
+            <form
+              id="ikas-popup-form"
               style="
                 display: flex;
                 flex-direction: column;
@@ -202,9 +203,11 @@
                       ></div>
                     </div>
                     <input
-                      type="text"
+                      type="email"
+                      name="email"
                       placeholder="E-posta *"
-                      value=""
+                      autocomplete="email"
+                      required
                       style="
                         background-color: transparent;
                         border: 1px solid rgb(227, 232, 239);
@@ -257,6 +260,9 @@
                     >
                       <input
                         type="checkbox"
+                        id="subscription-checkbox"
+                        required
+                        name="subscription-checkbox"
                         style="
                           width: 16px;
                           height: 16px;
@@ -265,7 +271,9 @@
                           top: 3px;
                         "
                       />
-                      <div>Kullanım Koşullarını kabul ediyorum</div>
+                      <label
+                      for="subscription-checkbox"
+                      >Kullanım Koşullarını kabul ediyorum</label>
                     </div>
                   </div>
                 </div>
@@ -279,13 +287,14 @@
                     padding: 0px;
                   "
                 >
-                  <a
-                    target="_self"
-                    style="width: 100%; min-width: fit-content; cursor: pointer"
-                    ><div
+              
+                    <button
+                    type="submit"
                       style="
+                      width: 100%;
+                      cursor: pointer;
                         color: rgb(255, 255, 255);
-                        background-color: rgb(0,0,0);
+                        background-color: rgb(0, 0, 0);
                         font-size: 16px;
                         font-weight: 500;
                         font-family: 'Work Sans', -apple-system, system-ui,
@@ -298,11 +307,11 @@
                       "
                     >
                       Kayıt Ol
-                    </div></a
-                  >
+                    </button>
+                
                 </div>
               </div>
-            </div>
+            </form>
             <div
               style="
                 border: 0px solid rgb(0, 0, 0);
@@ -328,7 +337,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
       <div
@@ -345,60 +353,59 @@
 
 
 
-    // Modal'ı sayfaya ekle ve olayları yönet
-    function initializeNewsletterModal() {
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        const modalElement = document.getElementById('ikas-popup-container');
-        const closeButton = modalElement.querySelector('svg.icon');
-        const form = modalElement.querySelector('form');
-        const emailInput = modalElement.querySelector('input[type="text"]');
-        const subscriptionCheckbox = modalElement.querySelector('input[type="checkbox"]');
-        const submitButton = modalElement.querySelector('a[target="_self"]');
+  // Modal'ı sayfaya ekle ve olayları yönet
+  function initializeNewsletterModal() {
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modalElement = document.getElementById('ikas-popup-container');
+    const closeButton = modalElement.querySelector('svg.icon');
+    const emailInput = modalElement.querySelector('input[type="email"]');
+    const subscriptionCheckbox = modalElement.querySelector('input[type="checkbox"]');
+    const formElement = modalElement.querySelector('form');
 
-        function showModal() {
-            modalElement.style.display = 'flex';
-        }
+    function showModal() {
+      modalElement.style.display = 'flex';
+    }
 
-        function hideModal() {
-            modalElement.style.display = 'none';
-        }
+    function hideModal() {
+      modalElement.style.display = 'none';
+    }
 
-        // Show modal after 300px scroll
-        let modalShown = false;
-        window.addEventListener('scroll', () => {
-            if (!modalShown && window.scrollY > 300 && !localStorage.getItem('newsletterSubscribed') && !localStorage.getItem('doNotShowNewsletter')) {
-                showModal();
-                modalShown = true;
-            }
-        });
+    // Show modal after 300px scroll
+    let modalShown = false;
+    window.addEventListener('scroll', () => {
+      if (!modalShown && window.scrollY > 300 && !localStorage.getItem('newsletterSubscribed') && !localStorage.getItem('doNotShowNewsletter')) {
+        showModal();
+        modalShown = true;
+      }
+    });
 
-        // Handle form submission
-        submitButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const subscribed = subscriptionCheckbox.checked;
+    // Handle form submission
+    formElement.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = emailInput.value;
+      const subscribed = subscriptionCheckbox.checked;
 
-            if (!email || !subscribed) {
-                alert('Lütfen e-posta adresinizi girin ve kullanım koşullarını kabul edin.');
-                return;
-            }
+      if (!email || !subscribed) {
+        alert('Lütfen e-posta adresinizi girin ve kullanım koşullarını kabul edin.');
+        return;
+      }
 
-            // Send GraphQL mutation
-            fetch('https://api.myikas.com/api/sf/graphql?op=saveCustomerFormData', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json, text/plain, */*',
-                    'Referer': 'https://dm-kimya.com/',
-                    'User-Agent': navigator.userAgent,
-                    'x-api-key': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtIjoiODZkYjk4YTAtMDMzMC00ZTY5LWI1NmQtZGE3YTliOGExZTdmIiwic2YiOiIxMmNiMjliNi1hMGE4LTQ1ZWYtYmJjMy03NmVlZWI4OGQxOGYiLCJzZnQiOjEsInNsIjoiNGUwYWUxZWQtZDI3Ny00N2QzLWIwZDQtNDJlZDUzYzk4NDMyIn0.qWzNEXlNC0nOEwxWZtxWV_rZ5-XIfsGOoeHKDcZbW0c',
-                    'x-sfid': '12cb29b6-a0a8-45ef-bbc3-76eeeb88d18f',
-                    'x-sfrid': generateUUID(),
-                    'x-sid': generateUUID(),
-                    'x-vid': generateUUID(),
-                },
-                body: JSON.stringify({
-                    query: `
+      // Send GraphQL mutation
+      fetch('https://api.myikas.com/api/sf/graphql?op=saveCustomerFormData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, text/plain, */*',
+          'Referer': 'https://dm-kimya.com/',
+          'User-Agent': navigator.userAgent,
+          'x-api-key': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtIjoiODZkYjk4YTAtMDMzMC00ZTY5LWI1NmQtZGE3YTliOGExZTdmIiwic2YiOiIxMmNiMjliNi1hMGE4LTQ1ZWYtYmJjMy03NmVlZWI4OGQxOGYiLCJzZnQiOjEsInNsIjoiNGUwYWUxZWQtZDI3Ny00N2QzLWIwZDQtNDJlZDUzYzk4NDMyIn0.qWzNEXlNC0nOEwxWZtxWV_rZ5-XIfsGOoeHKDcZbW0c',
+          'x-sfid': '12cb29b6-a0a8-45ef-bbc3-76eeeb88d18f',
+          'x-sfrid': generateUUID(),
+          'x-sid': generateUUID(),
+          'x-vid': generateUUID(),
+        },
+        body: JSON.stringify({
+          query: `
                         mutation saveCustomerFormData (
                             $input: SaveCustomerFormDataInput!,
                         ) {
@@ -407,64 +414,64 @@
                             )
                         }
                     `,
-                    variables: {
-                        input: {
-                            email: email,
-                            firstName: "",
-                            lastName: "",
-                            birthDate: "",
-                            phone: "",
-                            subscriptions: {
-                                email: true,
-                                phone: true,
-                                sms: true
-                            },
-                            captchaToken: null
-                        }
-                    }
-                })
-            })
-                .then(response => response.json())
-                .finally(() => {
-                    localStorage.setItem('newsletterSubscribed', 'true');
-                    hideModal();
-                    hideCountdown();
-                    alert('Tebrikler! Bültenimize başarıyla kaydoldunuz.');
-                });
+          variables: {
+            input: {
+              email: email,
+              firstName: "",
+              lastName: "",
+              birthDate: "",
+              phone: "",
+              subscriptions: {
+                email: true,
+                phone: true,
+                sms: true
+              },
+              captchaToken: null
+            }
+          }
+        })
+      })
+        .then(response => response.json())
+        .finally(() => {
+          localStorage.setItem('newsletterSubscribed', 'true');
+          hideModal();
+          hideCountdown();
+          alert('Tebrikler! Başarıyla Kaydoldunuz. Keyifli Alışverişler!');
         });
+    });
 
-        // Close button event listener
-        closeButton.addEventListener('click', hideModal);
+    // Close button event listener
+    closeButton.addEventListener('click', hideModal);
+  }
+
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // Countdown'u gizle
+  function hideCountdown() {
+    const countdownElement = document.getElementById('countdown');
+    if (countdownElement) {
+      countdownElement.style.display = 'none';
     }
+  }
 
-    function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-
-    // Countdown'u gizle
-    function hideCountdown() {
-        const countdownElement = document.getElementById('countdown');
-        if (countdownElement) {
-            countdownElement.style.display = 'none';
-        }
-    }
-
-    // Script'i başlat
-    function init() {
-        if (!localStorage.getItem('newsletterSubscribed')) {
-            initializeNewsletterModal();
-        } else {
-            hideCountdown();
-        }
-    }
-
-    // Sayfa yüklendiğinde script'i başlat
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+  // Script'i başlat
+  function init() {
+    if (!localStorage.getItem('newsletterSubscribed')) {
+      initializeNewsletterModal();
     } else {
-        init();
+      hideCountdown();
     }
+  }
+
+  // Sayfa yüklendiğinde script'i başlat
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
