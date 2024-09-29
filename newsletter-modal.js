@@ -1,51 +1,126 @@
 (function () {
-    // Poppins fontunu yükle
-    function loadPoppinsFont() {
-        const link = document.createElement('link');
-        link.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap';
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-    }
 
-    // Bootstrap'i yükle (eğer sayfada yoksa)
-    function loadBootstrap() {
-        return new Promise((resolve) => {
-            if (typeof bootstrap !== 'undefined') {
-                resolve();
-                return;
-            }
-            const link = document.createElement('link');
-            link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css';
-            link.rel = 'stylesheet';
-            document.head.appendChild(link);
 
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js';
-            script.onload = resolve;
-            document.head.appendChild(script);
-        });
-    }
-
-    // Stil ekle
-    function addStyles() {
+    function addModalStyles() {
         const style = document.createElement('style');
         style.textContent = `
-          body, #countdown, #newsletterModal {
-            font-family: 'Poppins', sans-serif;
-          }
-          #countdown {
-            font-weight: 600;
-          }
-          #newsletterModal .modal-title {
-            font-weight: 600;
-          }
-          #newsletterModal .list-group-item {
-            display: flex;
-            align-items: center;
-          }
-          #newsletterModal .list-group-item i {
-            margin-right: 10px;
-          }
+            #newsletterModal {
+                font-family: 'Poppins', sans-serif;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                display: none;
+                z-index: 999999;
+            }
+            #newsletterModal.show {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #newsletterModalLabel{
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            #newsletterModal .modal-dialog {
+                background-color: #fff;
+                border-radius: 5px;
+                max-width: 500px;
+                width: 100%;
+                margin: 10px;
+            }
+            #newsletterModal .modal-content {
+                position: relative;
+            }
+            #newsletterModal .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                border-bottom: 1px solid #dee2e6;
+            }
+            #newsletterModal .modal-title {
+                margin: 0;
+                font-weight: 600;
+            }
+            #newsletterModal .btn-close {
+                background: transparent;
+                border: 0;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+            #newsletterModal .modal-body {
+                padding: 1rem;
+            }
+            #newsletterModal .modal-footer {
+                padding: 1rem;
+                border-top: 1px solid #dee2e6;
+                text-align: right;
+            }
+            #newsletterModal .list-group {
+                list-style-type: none;
+                padding: 0;
+            }
+            #newsletterModal .list-group-item {
+                display: flex;
+                align-items: center;
+                padding: 0.5rem 0;
+            }
+            #newsletterModal .list-group-item i {
+                margin-right: 10px;
+                color: #28a745;
+            }
+            #newsletterModal .form-label {
+                display: block;
+                margin-bottom: 0.5rem;
+            }
+            #newsletterModal .form-control {
+                display: block;
+                width: -webkit-fill-available;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+            }
+            #newsletterModal .btn {
+                display: inline-block;
+                font-weight: 400;
+                text-align: center;
+                vertical-align: middle;
+                cursor: pointer;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+                transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                margin-top: 10px;
+            }
+            #newsletterModal .btn-black {
+                color: #fff;
+                background-color: #000;
+                border-color: #000;
+            }
+            #newsletterModal .btn-link {
+                font-weight: 400;
+                color: #007bff;
+                text-decoration: none;
+                background-color: transparent;
+                border: 0;
+            }
+            #newsletterModal .text-danger {
+                color: #dc3545;
+            }
+            #newsletterModal .text-success {
+                color: #28a745;
+            }
+            #newsletterModal .fw-bold {
+                font-weight: 700;
+            }
         `;
         document.head.appendChild(style);
 
@@ -58,20 +133,20 @@
 
     // Modal HTML'ini oluştur
     const modalHTML = `
-    <div class="modal fade" id="newsletterModal" tabindex="-1" aria-labelledby="newsletterModalLabel" aria-hidden="true" style="z-index:999999">
+    <div id="newsletterModal" class="modal" tabindex="-1" aria-labelledby="newsletterModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="newsletterModalLabel">Sınırlı Süre Fırsatı Kaçırma!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
           </div>
           <div class="modal-body">
             <p class="text-danger fw-bold" id="modalCountdown"></p>
             <p>E-posta adresinizi bırakarak aşağıdaki avantajlardan <span class="text-success fw-bold">ömür boyu</span> yararlanın:</p>
             <ul class="list-group mb-3">
-              <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Tüm Ürünlerde Ücretsiz Kargo</li>
-              <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> %80'e Varan İndirimler</li>
-              <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> 5000 TL ve Üzeri Sepette %20 İndirim</li>
+              <li class="list-group-item"><i class="bi bi-check-circle-fill"></i> Tüm Ürünlerde Ücretsiz Kargo</li>
+              <li class="list-group-item"><i class="bi bi-check-circle-fill"></i> %80'e Varan İndirimler</li>
+              <li class="list-group-item"><i class="bi bi-check-circle-fill"></i> 5000 TL ve Üzeri Sepette %20 İndirim</li>
             </ul>
             <form id="newsletterForm">
               <div class="mb-3">
@@ -87,7 +162,7 @@
         </div>
       </div>
     </div>
-  `;
+    `;
 
     function getCountdownTime() {
         const now = new Date();
@@ -106,12 +181,18 @@
     function initializeNewsletterModal() {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         const modalElement = document.getElementById('newsletterModal');
-        const modal = new bootstrap.Modal(modalElement);
+        const closeButton = modalElement.querySelector('.btn-close');
         const form = document.getElementById('newsletterForm');
         const doNotShowAgainBtn = document.getElementById('doNotShowAgain');
         const modalCountdownElement = document.getElementById('modalCountdown');
 
+        function showModal() {
+            modalElement.classList.add('show');
+        }
 
+        function hideModal() {
+            modalElement.classList.remove('show');
+        }
 
         // Countdown'u güncelle
         function updateModalCountdown() {
@@ -120,23 +201,23 @@
         }
 
         // Modal açıldığında countdown'u başlat
-        modalElement.addEventListener('shown.bs.modal', () => {
+        let countdownInterval;
+        function startCountdown() {
             updateModalCountdown();
-            // Her saniye countdown'u güncelle
-            const countdownInterval = setInterval(updateModalCountdown, 1000);
+            countdownInterval = setInterval(updateModalCountdown, 1000);
+        }
 
-            // Modal kapandığında interval'i temizle
-            modalElement.addEventListener('hidden.bs.modal', () => {
-                clearInterval(countdownInterval);
-            }, { once: true });
-        });
-
+        // Modal kapandığında interval'i temizle
+        function stopCountdown() {
+            clearInterval(countdownInterval);
+        }
 
         // Scroll olayını dinle
         let modalShown = false;
         window.addEventListener('scroll', () => {
             if (!modalShown && window.scrollY > 300 && !localStorage.getItem('newsletterSubscribed') && !localStorage.getItem('doNotShowNewsletter')) {
-                modal.show();
+                showModal();
+                startCountdown();
                 modalShown = true;
             }
         });
@@ -156,20 +237,20 @@
                     'User-Agent': navigator.userAgent,
                     'x-api-key': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtIjoiODZkYjk4YTAtMDMzMC00ZTY5LWI1NmQtZGE3YTliOGExZTdmIiwic2YiOiIxMmNiMjliNi1hMGE4LTQ1ZWYtYmJjMy03NmVlZWI4OGQxOGYiLCJzZnQiOjEsInNsIjoiNGUwYWUxZWQtZDI3Ny00N2QzLWIwZDQtNDJlZDUzYzk4NDMyIn0.qWzNEXlNC0nOEwxWZtxWV_rZ5-XIfsGOoeHKDcZbW0c',
                     'x-sfid': '12cb29b6-a0a8-45ef-bbc3-76eeeb88d18f',
-                    'x-sfrid': generateUUID(), // Her istek için yeni bir UUID oluştur
-                    'x-sid': generateUUID(), // Her istek için yeni bir UUID oluştur
-                    'x-vid': generateUUID(), // Her istek için yeni bir UUID oluştur
+                    'x-sfrid': generateUUID(),
+                    'x-sid': generateUUID(),
+                    'x-vid': generateUUID(),
                 },
                 body: JSON.stringify({
                     query: `
-                mutation subscribeToMarketingNotifications(
-                  $input: SubscribeToMarketingNotificationsInput!
-                ) {
-                  subscribeToMarketingNotifications(
-                    input: $input
-                  )
-                }
-              `,
+                    mutation subscribeToMarketingNotifications(
+                      $input: SubscribeToMarketingNotificationsInput!
+                    ) {
+                      subscribeToMarketingNotifications(
+                        input: $input
+                      )
+                    }
+                  `,
                     variables: {
                         input: {
                             email: email,
@@ -181,7 +262,8 @@
                 .then(response => response.json())
                 .finally(() => {
                     localStorage.setItem('newsletterSubscribed', 'true');
-                    modal.hide();
+                    hideModal();
+                    stopCountdown();
                     alert('Tebrikler! Özel fırsatlardan ömür boyu yararlanmak için bültenimize başarıyla kaydoldunuz.');
                     hideCountdown();
                 });
@@ -190,10 +272,16 @@
         // "Bir daha gösterme" butonunu dinle
         doNotShowAgainBtn.addEventListener('click', () => {
             localStorage.setItem('doNotShowNewsletter', 'true');
-            modal.hide();
+            hideModal();
+            stopCountdown();
+        });
+
+        // Kapat butonunu dinle
+        closeButton.addEventListener('click', () => {
+            hideModal();
+            stopCountdown();
         });
     }
-
 
     function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -212,12 +300,11 @@
 
     // Script'i başlat
     function init() {
-        loadPoppinsFont();
-        addStyles();
-        if (localStorage.getItem('newsletterSubscribed')) {
-            hideCountdown();
+        addModalStyles();
+        if (!localStorage.getItem('newsletterSubscribed')) {
+            initializeNewsletterModal();
         } else {
-            loadBootstrap().then(initializeNewsletterModal);
+            hideCountdown();
         }
     }
 
