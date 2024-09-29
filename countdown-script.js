@@ -56,25 +56,6 @@
     updateCountdown();
   }
 
-  function updateSettings(newSettings) {
-    return fetch("update-settings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newSettings),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          settings = newSettings;
-          setupCountdown();
-          return true;
-        } else {
-          throw new Error("Settings güncellenemedi");
-        }
-      });
-  }
 
   // DOM yüklendikten sonra çalıştır
   if (document.readyState === "loading") {
@@ -87,7 +68,6 @@
 
   // Global nesnelere erişim sağla
   window.countdownSettings = {
-    update: updateSettings,
     current: () => Object.assign({}, settings),
   };
 })();
