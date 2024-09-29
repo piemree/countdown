@@ -1,42 +1,58 @@
-function createCountdownElement() {
-    var countdownElement = document.createElement("div");
-    countdownElement.id = "countdown";
-    countdownElement.style.cssText =
-      "font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; color: #333; background-color: #f0f0f0; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); position: fixed; top: 20px; left: 50%; transform: translateX(-50%);";
-    document.body.appendChild(countdownElement);
+(function () {
+  function createCountdownElement() {
+    const countdownElement = document.createElement('div');
+    countdownElement.id = 'countdown';
+    document.body.insertBefore(countdownElement, document.body.firstChild);
     return countdownElement;
   }
 
-  function updateCountdown(countdownElement, duration) {
-    var hours = Math.floor(duration / 3600);
-    var minutes = Math.floor((duration % 3600) / 60);
-    var seconds = duration % 60;
+  function setupCountdown() {
+    let countdownElement = document.getElementById('countdown');
 
-    var hoursStr = hours < 10 ? "0" + hours : hours;
-    var minutesStr = minutes < 10 ? "0" + minutes : minutes;
-    var secondsStr = seconds < 10 ? "0" + seconds : seconds;
-
-    countdownElement.textContent =
-      "İndirim sona eriyor: " +
-      hoursStr +
-      ":" +
-      minutesStr +
-      ":" +
-      secondsStr;
-
-    if (duration > 0) {
-      setTimeout(function () {
-        updateCountdown(countdownElement, duration - 1);
-      }, 1000);
-    } else {
-      countdownElement.textContent = "İndirim sona erdi!";
+    if (!countdownElement) {
+      countdownElement = createCountdownElement();
     }
+
+    // Stil ayarları
+    countdownElement.style.position = 'sticky';
+    countdownElement.style.top = '0';
+    countdownElement.style.left = '0';
+    countdownElement.style.width = '100%';
+    countdownElement.style.backgroundColor = '#000000';
+    countdownElement.style.color = '#FFFFFF';
+    countdownElement.style.fontWeight = 'bold';
+    countdownElement.style.padding = '10px 0';
+    countdownElement.style.textAlign = 'center';
+    countdownElement.style.fontSize = '16px';
+    countdownElement.style.zIndex = '1000';
+
+    function updateCountdown() {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+
+      let timeDiff = midnight - now;
+
+      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+      const timeString = [hours, minutes, seconds]
+        .map(v => v < 10 ? "0" + v : v)
+        .join(":");
+
+      countdownElement.textContent = `İNDİRİMLER İÇİN SON: ${timeString}`;
+
+      requestAnimationFrame(updateCountdown);
+    }
+
+    updateCountdown();
   }
 
-  function startCountdown() {
-    var countdownElement = createCountdownElement();
-    var duration = 2 * 60 * 60; // 2 saat
-    updateCountdown(countdownElement, duration);
+  // DOM yüklendikten sonra çalıştır
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupCountdown);
+  } else {
+    setupCountdown();
   }
-
-  window.onload = startCountdown;
+})();
