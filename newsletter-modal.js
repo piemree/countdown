@@ -58,7 +58,7 @@
 
     // Modal HTML'ini oluştur
     const modalHTML = `
-    <div class="modal fade" id="newsletterModal" tabindex="-1" aria-labelledby="newsletterModalLabel" aria-hidden="true">
+    <div class="modal fade" id="newsletterModal" tabindex="-1" aria-labelledby="newsletterModalLabel" aria-hidden="true" style="z-index:999999">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -78,7 +78,7 @@
                 <label for="email" class="form-label">E-posta Adresiniz</label>
                 <input type="email" class="form-control" id="email" required placeholder="ornek@email.com">
               </div>
-              <button type="submit" class="btn btn-success w-100">Fırsatları Kaçırma!</button>
+              <button type="submit" class="btn btn-black w-100">Fırsatları Kaçırma!</button>
             </form>
           </div>
           <div class="modal-footer">
